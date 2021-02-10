@@ -1,0 +1,36 @@
+version: '3.5'
+services:
+    uploader:
+        image: zoom-me-server
+        build: .
+        command: python main-uploader.py
+        environment:
+            - SALT
+            - IMAGES_DIR=/data/img
+            - UPLOADER_PORT=80
+        ports:
+            - 80:80
+        volumes:
+            - ${EXT_IMAGES_DIR}:/data/img
+        depends_on:
+            - mongo
+    server:
+        image: zoom-me-server
+        build: .
+        command: python main-server.py
+        environment:
+            - SALT
+            - IMAGES_DIR=/data/img
+            - SERVER_PORT=8000
+        ports:
+            - 8000:8000
+        volumes:
+            - ${EXT_IMAGES_DIR}:/data/img
+        depends_on:
+            - mongo
+    mongo:
+        image: mongo:4.4.3
+        volumes:
+            - ${MONGODB_PATH}:/data/db
+        ports:
+            - 27017:27017
