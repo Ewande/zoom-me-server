@@ -6,6 +6,7 @@ from fastapi import FastAPI, Depends, status, HTTPException, Response
 import uvicorn
 
 from ramka.config import cfg
+from ramka.frame import Frame
 from ramka.mongo import is_valid_frame, get_images_since, get_image_full_path
 
 
@@ -16,7 +17,7 @@ def authorize(credentials: HTTPBasicCredentials = Depends(HTTPBasic())):
     if not is_valid_frame(credentials.username, credentials.password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail='Incorrect email or password.',
+            detail='Incorrect frame ID or password.',
             headers={'WWW-Authenticate': 'Basic'},
         )
     return credentials.username
@@ -36,6 +37,11 @@ def get_image_ids(since: dt.datetime, frame_id: str = Depends(authorize)):
 def get_image(image_id: str, frame_id: str = Depends(authorize)):
     image_path = get_image_full_path(frame_id, image_id)
     return Response(content=Path(image_path).read_bytes())
+
+
+@app.put('/frames')
+def add_frame(frame_id: str, password: str):
+    Frame.register(frame_id, password)
 
 
 if __name__ == '__main__':

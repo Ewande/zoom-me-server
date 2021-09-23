@@ -10,8 +10,8 @@ class MainConfig(pydantic.BaseSettings):
     MONGODB_PORT: int = 27017
     MONGODB_DB: str = 'main'
 
-    UPLOADER_PORT: int = 8050
-    SERVER_PORT: int = 5000
+    UPLOADER_PORT: int = 80
+    SERVER_PORT: int = 8000
 
 
 cfg = MainConfig()

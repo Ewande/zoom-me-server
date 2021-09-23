@@ -15,12 +15,17 @@ log = logging.getLogger(__name__)
 def get_mongo_client():
     return MongoClient(
         host=cfg.MONGODB_HOST,
-        port=cfg.MONGODB_PORT)[cfg.MONGODB_DB]
+        port=cfg.MONGODB_PORT
+    )[cfg.MONGODB_DB]
+
+
+def get_collection(collection: str):
+    return get_mongo_client()[collection]
 
 
 def is_valid_frame(frame_id: str, password: str):
     password_hash = bcrypt.hashpw(password.encode(), cfg.SALT)
-    return get_mongo_client()['frames'].find_one({
+    return get_collection('frames').find_one({
         '_id': frame_id,
         'password': password_hash
     }) is not None
@@ -51,7 +56,7 @@ def add_image_to_frame(frame_id: str, image: dict, sender: str, description: str
 
 
 def get_images_since(frame_id: str, since: dt.datetime):
-    return list(get_mongo_client()['frames'].aggregate([
+    return list(get_collection('frames').aggregate([
         {'$match': {'_id': frame_id}},
         {'$project': {
             'images': {'$filter': {
@@ -64,7 +69,7 @@ def get_images_since(frame_id: str, since: dt.datetime):
 
 
 def get_image_full_path(frame_id: str, filename: str):
-    return get_mongo_client()['frames'].find_one({
+    return get_collection('frames').find_one({
         '_id': frame_id,
         'images': {'$elemMatch': {
             'filepath': {'$regex': filename}
